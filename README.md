@@ -1,63 +1,200 @@
 # NIMB Mobile - Termux Edition
 
-Port of NIMB and NIMB Search Proxy for Android via Termux.
+Run NIMB on your Android device via Termux.
 
 ## Requirements
-
 - Android device with Termux installed
-- Go cross-compiled binaries for `linux/arm64`
-- `cloudflared` (optional, for tunneling)
-
-## Building
-
-On your desktop machine, cross-compile for ARM64:
-
-```bash
-# Build NIMB Mobile
-cd nimb-mobile/nimb
-GOOS=linux GOARCH=arm64 go build -o nimb-mobile .
-
-# Build Search Proxy Mobile
-cd ../search-proxy
-GOOS=linux GOARCH=arm64 go build -o nimb-search-proxy-mobile .
-```
+- `cloudflared`
 
 ## Installation
 
-1. Transfer the `nimb-mobile` folder to your Android device
-2. Open Termux and navigate to the folder
-3. Make scripts executable: `chmod +x start.sh nimb/nimb-mobile search-proxy/nimb-search-proxy-mobile`
+### Step 1: Download the Release
 
-## Usage
+Go to the **Releases** page and download `nimb-mobile-termux.zip`
+
+### Step 2: Setup Termux
+
+Open Termux on your Android device and run:
 
 ```bash
+# Update Termux and install dependencies
+pkg update && pkg install -y tmux unzip cloudflared
+
+# Grant storage access (tap "Allow" when prompted)
+termux-setup-storage
+```
+
+### Step 3: Extract and Run
+
+```bash
+# Create directory and navigate to it
+mkdir -p ~/nimb-mobile && cd ~/nimb-mobile
+
+# Extract the release from Downloads
+unzip ~/storage/downloads/nimb-mobile-termux.zip
+
+# Make everything executable
+chmod +x nimb-mobile start.sh
+
+# Start NIMB!
 ./start.sh
 ```
 
-This will:
-- Start NIMB on port 3000
-- Start Search Proxy on port 4000
-- Run both in background tmux sessions
-- Apply wake lock to prevent process termination
+That's it! NIMB is now running on your phone.
 
-## Access
+## Usage
 
-- NIMB UI: `http://localhost:3000`
-- Search Proxy UI: `http://localhost:4000`
-- API endpoints work the same as desktop version
-
-## Managing Sessions
+Start NIMB anytime with:
 
 ```bash
-# View NIMB logs
+cd ~/nimb-mobile
+./start.sh
+```
+
+The script will:
+- Start NIMB on port 3000
+- Run in background
+- Apply wake lock to keep it running
+
+## Accessing NIMB
+
+After starting, you'll see:
+
+```
+=============================================
+                 RUNNING!                    
+=============================================
+
+  NIMB: http://localhost:3000
+
+  LAN Access: http://192.168.x.x:3000
+
+=============================================
+```
+
+- **On your phone:** Open browser → `http://localhost:3000`
+- **From other devices:** Use the LAN cloudflared tunnel without v1/chat/completions
+
+## Managing NIMB
+
+```bash
+# View live logs
 tmux attach -t nimb
 
-# View Search Proxy logs
-tmux attach -t search-proxy
+# Exit logs (press these keys)
+Ctrl+B, then D
 
 # Stop NIMB
 tmux kill-session -t nimb
 
-# Stop Search Proxy
-tmux kill-session -t search-proxy
+# Check if running
+tmux list-sessions
 ```
+
+## Termux Basics
+
+New to Termux? Here are essential commands:
+
+```bash
+# Where am I?
+pwd
+
+# What's here?
+ls
+
+# Go to NIMB folder
+cd ~/nimb-mobile
+
+# Go back one folder
+cd ..
+
+# Read a file
+cat filename
+```
+
+## Troubleshooting
+
+**"unzip: command not found"**
+```bash
+pkg install unzip
+```
+
+**"Permission denied"**
+```bash
+chmod +x nimb-mobile start.sh
+# or try:
+bash start.sh
+```
+
+**Can't find the zip file?**
+```bash
+# First, make sure you have storage access:
+termux-setup-storage
+
+# Then check if file is there:
+ls ~/storage/downloads/
+
+# Make sure it's named: nimb-mobile-termux.zip
+```
+
+**Port already in use?**
+```bash
+tmux kill-session -t nimb
+# or:
+pkill -f nimb-mobile
+```
+
+**NIMB stops when I close Termux?**
+
+This shouldn't happen because start.sh runs NIMB in tmux. If it does:
+- Don't force-close Termux from Recent Apps
+- Check that wake lock is enabled (start.sh does this automatically)
+
+
+## Building from Source
+
+Want to compile it yourself instead of using the pre-compiled release?
+
+### On Your Desktop Machine
+
+Cross-compile the binary for ARM64:
+
+```bash
+# Navigate to your NIMB project
+cd nimb-mobile
+
+# Build for Android (ARM64)
+GOOS=linux GOARCH=arm64 go build -o nimb-mobile .
+```
+
+This creates a `nimb-mobile` binary ready for Android.
+
+### Transfer to Android
+
+1. Transfer the compiled `nimb-mobile` binary to your Android device's Downloads folder (via USB, cloud storage, etc.)
+2. Also download or create the `start.sh` script from this repository
+
+### Install on Termux
+
+```bash
+# Setup Termux (if you haven't already)
+pkg update && pkg install -y tmux cloudflared
+termux-setup-storage
+
+# Create directory
+mkdir -p ~/nimb-mobile && cd ~/nimb-mobile
+
+# Copy files from Downloads
+cp ~/storage/downloads/nimb-mobile ~/nimb-mobile/
+cp ~/storage/downloads/start.sh ~/nimb-mobile/
+
+# Make executable
+chmod +x nimb-mobile start.sh
+
+# Run!
+./start.sh
+```
+
+---
+
+**Pro Tip:** NIMB runs in the background via tmux, so you can close Termux and it keeps running. Access it anytime at `http://localhost:3000`
