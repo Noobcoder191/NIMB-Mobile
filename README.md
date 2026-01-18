@@ -1,4 +1,4 @@
-# NIMB Mobile - Termux Edition
+# NIMB Mobile
 
 Run NIMB on your Android device via Termux.
 
@@ -198,3 +198,4 @@ chmod +x nimb-mobile start.sh
 ---
 
 **Pro Tip:** NIMB runs in the background via tmux, so you can close Termux and it keeps running. Access it anytime at `http://localhost:3000`
+
